@@ -1,0 +1,274 @@
+<!doctype html>
+<html>
+<head>
+<title>Speakers</title>
+<!-- <meta name="description" content="Our first page">
+<meta name="keywords" content="html tutorial template"> -->
+<style>
+    .speaker{
+        height: 100%;
+    }
+    .Background{
+        background-color: lightgray;
+    }    
+    /* Pastel pink */
+    .SPEAKER_00 {
+        background-color: #FEC8D8;
+    }
+
+    /* Pastel peach */
+    .SPEAKER_01 {
+        background-color: #ff8282;
+    }
+
+    /* Pastel yellow */
+    .SPEAKER_02 {
+        background-color: #acffb3;
+    }
+
+    /* Pastel green */
+    .SPEAKER_03 {
+        background-color: #C5E5C5;
+    }
+
+    /* Pastel blue */
+    .SPEAKER_04 {
+        background-color: #C3D9FF;
+    }
+
+    /* Pastel lavender */
+    .SPEAKER_05 {
+        background-color: #E9C7E9;
+    }
+
+    /* Pastel coral */
+    .SPEAKER_06 {
+        background-color: #FFD6D1;
+    }
+
+    /* Pastel salmon */
+    .SPEAKER_07{
+        background-color: #fffab4;
+    }
+
+    /* Pastel mint */
+    .SPEAKER_08 {
+        background-color: #D1E8D1;
+    }
+
+    /* Pastel sky blue */
+    .SPEAKER_09 {
+        background-color: #9b5f2b;
+    }
+
+    #video-controls{
+        background-color: rgba(0, 0, 0, 0.8);
+        padding: 1em;
+    }
+
+    #timeline{
+        margin-bottom: 1em;
+    }
+
+    #play {
+        border: 0;
+        background: transparent;
+        box-sizing: border-box;
+        width: 0;
+        height: 37px;
+        border-color: transparent transparent transparent #dbdbdb;
+        transition: 100ms all ease;
+        cursor: pointer;
+        border-style: solid;
+        border-width: 18px 0 18px 30px;
+        }
+    #play.paused {
+        border-style: double;
+        border-width: 0px 0 0px 30px;
+    }
+    #play:hover {
+        border-color: transparent transparent transparent #fff;
+    }
+    .slider{
+        -webkit-appearance: none;
+        width: 100%;
+        background: linear-gradient(to right, #ff7a7a 0%, #ff7a7a 0%, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0) 100%);
+        outline: none;
+        transition: background 450ms ease-in;
+        opacity: 0.7;
+        position: absolute;
+        height: 10px;
+        margin: 0;
+    }
+
+    .slider:hover {
+        opacity: 1; /* Fully shown on mouse-over */
+    }
+
+    .buttons{
+        display: flex;
+        align-items: center;
+    }
+
+    #time{
+        margin-left: 1em;
+        color: #fff;
+    }
+    #speaker{
+        margin-left: 1em;
+        color: #fff;
+    }
+
+    @keyframes rotate {
+        from {
+            transform: rotate(0deg);
+        }
+        to { 
+            transform: rotate(360deg);
+        }
+    }
+ 
+
+    @-webkit-keyframes rotate {
+        from {
+            -webkit-transform: rotate(0deg);
+        }
+        to { 
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    #load {
+        width: 20px;
+        height: 20px;
+        margin: 0 0 0;
+        border: solid 5px #fff;
+        border-radius: 50%;
+        border-right-color: transparent;
+        border-bottom-color: transparent;
+        -webkit-transition: all 0.5s ease-in;
+        -webkit-animation-name: rotate;
+        -webkit-animation-duration: 1.0s;
+        -webkit-animation-iteration-count: infinite;
+        -webkit-animation-timing-function: linear;
+        transition: all 0.5s ease-in;
+        animation-name: rotate;
+        animation-duration: 1.0s;
+        animation-iteration-count: infinite;
+        animation-timing-function: linear;
+    }
+    .hide{
+        display: none;
+    }
+</style>
+</head>
+<body>
+    <div class="video-container" style="width: 100%; background-color: #000;">
+        <video controls class="video" id="video" preload="metadata" style="width: 100%" crossorigin="use-credentials">
+            <source src="$url" type="video/mp4"></source>
+            <track src="$vtt" kind="subtitles" srclang="en" label="English" default></track>
+        </video>
+        <div id="video-controls">
+            <div style="position: relative;">
+                <input type="range" min="1" max="100" value="0" step="0.05" class="slider" id="slider">
+                <div id="timeline" title='Background' style="display: flex; align-items: center; width: 100%; background-color: lightgray; height: 10px;"></div>
+            </div>
+
+            <div class="buttons">
+                <div id="load"></div>
+                <div id="play" title="Play" class="hide"></div>
+                <div id="time">00:00 / 00:00</div>
+                <div id="speaker"></div>
+            </div>
+        </div>
+    </div>
+<script type="text/javascript">
+    const zeroPad = (num, places=2) => String(num).padStart(places, '0')
+
+    let seeking = false;
+
+    slider = document.getElementById('slider');
+    slider.addEventListener("mousedown", (event) => {
+        seeking = true;
+    });
+    slider.addEventListener("mouseup", (event) => {
+        seeking = false;
+    });
+    slider.addEventListener("input", (event) => {
+        let value = event.target.value
+        event.target.style.background = 'linear-gradient(to right, #ff7a7a 0%, #ff7a7a ' + value + '%, rgba(255, 255, 255, 0) ' + value + '%, rgba(255, 255, 255, 0) 100%)'
+    });
+    slider.addEventListener("change", (event) => {
+        video.pause();
+        video.currentTime = (event.target.value / 100) * video.duration
+        video.play();
+    });
+
+    const time = document.getElementById('time');
+
+    const video = document.getElementById('video');
+    video.controls = false;
+    video.addEventListener('timeupdate', (event) => {
+        if (!seeking) {
+        let value = (video.currentTime / video.duration) * 100
+        slider.style.background = 'linear-gradient(to right, #ff7a7a 0%, #ff7a7a ' + value + '%, rgba(255, 255, 255, 0) ' + value + '%, rgba(255, 255, 255, 0) 100%)'
+        slider.value = value;
+        }
+
+        let minutes = Math.floor(video.currentTime / 60);
+        let seconds = Math.floor(video.currentTime - minutes * 60);
+        let total_minutes = Math.floor(video.duration / 60);
+        let total_seconds = Math.floor(video.duration - total_minutes * 60);
+        time.innerHTML = `${zeroPad(minutes)}:${zeroPad(seconds)} / ${zeroPad(total_minutes)}:${zeroPad(total_seconds)}`;
+    });
+    
+    const speaker = document.getElementById('speaker');
+    const track = video.textTracks[0];
+    track.addEventListener('cuechange', () => {
+        const cues = track.activeCues[0];
+        const speaker_match = cues.text.match(/<v.(.*?)>/);
+            if (speaker_match)
+                speaker.innerHTML = speaker_match[1];  
+    });
+
+    const load = document.getElementById('load');
+    const play = document.getElementById('play');
+
+    video.addEventListener('loadedmetadata', (event) => {
+        load.classList.add('hide');
+        play.classList.remove('hide');
+        let total_minutes = Math.floor(video.duration / 60);
+        let total_seconds = Math.floor(video.duration - total_minutes * 60);
+        time.innerHTML = `00:00 / ${zeroPad(total_minutes)}:${zeroPad(total_seconds)}`;
+    });
+    
+    const videoControls = document.getElementById('video-controls');
+    const timeline = document.getElementById('timeline');
+
+    play.addEventListener('click', () => {
+        if (video.paused) {
+            video.play();
+        } else {
+            video.pause();
+        }
+        play.classList.toggle('paused');
+    });
+
+    const percentages = $percentages;
+
+    
+
+    async function main(){
+        let divs = ''
+        let last_time = 0
+        for(let p of percentages){
+            console.log(p)
+            divs += `<div class="speaker ${p[0]}" style="width:${p[1]}%;" title="${p[0]}"></div>\n`
+        }
+        timeline.innerHTML = divs
+    }
+
+    main()
+</script>
+</body>
+</html>
